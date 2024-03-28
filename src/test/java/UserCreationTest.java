@@ -1,15 +1,19 @@
 import io.qameta.allure.Description;
 import io.restassured.RestAssured;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 
 public class UserCreationTest {
 
-    String email = "Nadezhda42" + Math.random() + "@yandex.ru";
-    String password = "qwerty1232" + Math.random();
+
+    String email = "nadezhda42" + RandomStringUtils.randomAlphabetic(20) + "@yandex.ru";
+    String password = "qwerty1232" + RandomStringUtils.randomAlphanumeric(20);
 
 
     @Before
@@ -61,6 +65,32 @@ public class UserCreationTest {
 
         UserAPI.createUser(user).then()
                 .assertThat().body("refreshToken", notNullValue());
+    }
+
+    @Test
+    @Description("Check that email is correclty saved after registration")
+    public void checkEmailSaveCorrectly() {
+        UserPOJO user = new UserPOJO(email, password, "Надежда");
+
+        String response = UserAPI.createUser(user).body().asString();
+        String[] splited = response.split(";");
+        String savedEmail = splited[0].substring(33, 73);
+
+        assertEquals ("Логин некорректно сохранен", email.toLowerCase(), savedEmail.toLowerCase());
+    }
+
+    @Test
+    @Description("Check that name is correclty saved after registration")
+    public void checkNameSaveCorrectly() {
+        UserPOJO user = new UserPOJO(email, password, "Надежда");
+
+        String response = UserAPI.createUser(user).body().asString();
+        String[] splited1 = response.split(";");
+        String savedName = splited1[0].substring(83,90);
+
+        System.out.println(savedName);
+
+        assertEquals ("Имя некорректно сохранено", "Надежда", savedName);
     }
 
 

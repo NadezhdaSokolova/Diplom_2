@@ -4,12 +4,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
-
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 
 public class UserLoginTest {
 
-    String email = "nadezhda0@yandex.ru";
+    String email = "nadezhda100@yandex.ru";
     String password = "111111";
     String name = "Надежда";
     UserPOJO user1 = new UserPOJO(email, password, name);
@@ -71,6 +71,33 @@ public class UserLoginTest {
     public void checkRefreshTokenIsPresentDuringLogin() {
         UserAPI.authorizedUser(user1).then()
                 .assertThat().body("refreshToken", notNullValue());
+    }
+
+    @Test
+    @Description("Check that email correctly return after authorization")
+    public void checkEmailReturnCorrectly() {
+        UserPOJO user = new UserPOJO(email, password, "Надежда");
+
+        String response = UserAPI.authorizedUser(user1).body().asString();
+        String[] splited = response.split(";");
+        String savedEmail = splited[0].substring(326, 347);
+
+
+        assertEquals ("Логин некорректно вернулся", email.toLowerCase(), savedEmail.toLowerCase());
+    }
+
+    @Test
+    @Description("Check that name is correclty return after authorization")
+    public void checkNameReturnCorrectly() {
+        //UserPOJO user = new UserPOJO(email, password, "Надежда");
+
+        String response = UserAPI.authorizedUser(user1).body().asString();
+        String[] splited1 = response.split(";");
+        String savedName = splited1[0].substring(357,364);
+
+        System.out.println(savedName);
+
+        assertEquals ("Имя некорректно сохранено", "Надежда", savedName);
     }
 
 
