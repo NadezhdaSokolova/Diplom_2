@@ -4,7 +4,7 @@ import static io.restassured.RestAssured.given;
 
 public class UserAPI {
 
-    final static String USER = "/api/auth/register";
+    final static String USERREGISTERED = "/api/auth/register";
     final static String USERDATA = "/api/auth/user";
     final static String USERLOGIN = "/api/auth/login";
 
@@ -15,14 +15,14 @@ public class UserAPI {
         Response response = given()
                 .header("Content-type", "application/json")
                 .body(user)
-                .post(USER);
+                .post(USERREGISTERED);
 
         return response;
 
     }
 
     @Step("Make post-request to login of courier")
-    public static Response autorizedUser(UserPOJO user){
+    public static Response authorizedUser(UserPOJO user){
 
         Response response = given()
                 .header("Content-type", "application/json")
