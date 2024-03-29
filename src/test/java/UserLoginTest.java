@@ -112,12 +112,4 @@ public class UserLoginTest {
     }
 
 
-
-
-    //            String token = UserAPI.autorizedUser(user1).header("Authorization");
-//            String[] split = token.split(" ");
-//            String tokenNumber = split[1].substring(0, split[1].length() - 1);
-//            System.out.println(tokenNumber);
-
-
 }
