@@ -8,7 +8,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 
 public class UserLoginTest {
-
     String email = "nadezhda100@yandex.ru";
     String password = "111111";
     String name = "Надежда";
@@ -17,7 +16,6 @@ public class UserLoginTest {
     @Before
     public void setUp() {
         RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/";
-
         //создаем тестового пользователя
         UserAPI.createUser(user1);
     }
@@ -26,8 +24,8 @@ public class UserLoginTest {
     public void deleteTestUser(){
 
         try  {
-            UserAPI.authorizedUser(user1);
-            UserAPI.deleteUser(user1);
+            UserAPI.makeLogout(UserAPI.getToken(user1));
+            UserAPI.deleteUser(UserAPI.getToken(user1),user1);
         }
         catch (Exception e){
             System.out.println ("Удалять нечего. Пользователь не прошел авторизацию.");
@@ -110,6 +108,5 @@ public class UserLoginTest {
                 .and()
                 .assertThat().body("message", equalTo("email or password are incorrect"));
     }
-
 
 }

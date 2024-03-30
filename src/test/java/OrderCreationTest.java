@@ -29,8 +29,8 @@ public class OrderCreationTest {
     @After
     public void deleteTestUser(){
         try  {
-            UserAPI.authorizedUser(user1);
-            UserAPI.deleteUser(user1);
+
+            UserAPI.deleteUser(UserAPI.getToken(user1),user1);
         }
         catch (Exception e){
             System.out.println ("Удалять нечего. Пользователь не прошел авторизацию.");

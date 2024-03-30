@@ -1,7 +1,7 @@
 import io.qameta.allure.Description;
 import io.restassured.RestAssured;
+import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,27 +11,26 @@ import static org.junit.Assert.assertEquals;
 
 public class UserCreationTest {
 
-
     String email = "nadezhda42" + RandomStringUtils.randomAlphabetic(20) + "@yandex.ru";
     String password = "qwerty1232" + RandomStringUtils.randomAlphanumeric(20);
-
+    UserPOJO user1 = new UserPOJO("Nadezhda29@yandex.ru", "111111", "Надежда");
 
     @Before
     public void setUp() {
         RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/";
-
-         //создаем тестового пользователя
-        UserPOJO user1 = new UserPOJO("Nadezhda21@yandex.ru", "111111", "Надежда");
+         //создаем тестового пользователя, для проверки, что с таким же email создать более будет нельзя
         UserAPI.createUser(user1);
     }
 
     @After
     public void deleteTestUser(){
-        UserPOJO user1 = new UserPOJO("Nadezhda21@yandex.ru", "111111", "Надежда");
 
         try  {
-            UserAPI.authorizedUser(user1);
-            UserAPI.deleteUser(user1);
+            ValidatableResponse authorization = UserAPI.ResponseToGetRefreshToken(user1);
+            String accessTokenWithBearer = authorization.extract().path("accessToken");
+            String newAccessToken = accessTokenWithBearer.substring(7, accessTokenWithBearer.length());
+            System.out.println(newAccessToken);
+            UserAPI.deleteUser(newAccessToken,user1);
         }
         catch (Exception e){
             System.out.println ("Удалять нечего. Пользователь не прошел авторизацию.");
@@ -132,7 +131,7 @@ public class UserCreationTest {
     public void checkAttemptAlreadyExistedUserCreation() {
 
         // сперва пользователя нужно создать в предусловии
-        UserPOJO user = new UserPOJO("Nadezhda21@yandex.ru", "111111", "Надежда");
+        UserPOJO user = new UserPOJO("Nadezhda29@yandex.ru", "111111", "Надежда");
 
         UserAPI.createUser(user).then().statusCode(403)
                 .and()

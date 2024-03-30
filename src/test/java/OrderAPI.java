@@ -2,11 +2,9 @@ import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import static io.restassured.RestAssured.given;
 
 public class OrderAPI {
-
     final static String ORDERS = "/api/orders";
     final static String INGREDIENTS = "api/ingredients";
 

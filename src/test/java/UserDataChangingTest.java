@@ -1,30 +1,21 @@
 import io.qameta.allure.Description;
 import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import io.restassured.response.ResponseBody;
 import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
 
 public class UserDataChangingTest {
-    String email = "nadezhda22@yandex.ru";
+    String email = "nadezhda52@yandex.ru";
     String password = "322222";
     String name = "Надежда";
     String code = "c2ca9439-a396-4b65-a7f7-7542d0b95bc7";
     UserPOJO user1 = new UserPOJO(email, password, name);
     UserPOJO user0 = new UserPOJO("6"+email, "111111", name);
     UserPOJO user8 = new UserPOJO("9"+email, "111111", name);
-
-    public static String getToken(UserPOJO user){
-        String token = UserAPI.authorizedUser(user).body().asString();
-        String[] split = token.split(" ");
-        String tokenNumber = split[1].substring(0, 171);
-        System.out.println(tokenNumber);
-        return tokenNumber;
-    }
 
     @Before
     public void setUp() {
@@ -40,14 +31,14 @@ public class UserDataChangingTest {
     public void deleteTestUser(){
 
         try  {
-            UserAPI.authorizedUser(user1);
-            UserAPI.deleteUser(user1);
+            UserAPI.makeLogout(UserAPI.getToken(user1));
+            UserAPI.deleteUser(UserAPI.getToken(user1),user1);
 
-            UserAPI.authorizedUser(user0);
-            UserAPI.deleteUser(user0);
+            UserAPI.makeLogout(UserAPI.getToken(user0));
+            UserAPI.deleteUser(UserAPI.getToken(user0),user0);
 
-            UserAPI.authorizedUser(user8);
-            UserAPI.deleteUser(user8);
+            UserAPI.makeLogout(UserAPI.getToken(user8));
+            UserAPI.deleteUser(UserAPI.getToken(user8),user8);
         }
         catch (Exception e){
             System.out.println ("Удалять нечего. Пользователь не прошел авторизацию.");
@@ -60,27 +51,49 @@ public class UserDataChangingTest {
 
         UserPOJO user2 = new UserPOJO(null, null, name+"1");
 
-        UserAPI.changingDataUser(UserDataChangingTest.getToken(user1), user2).then()
+        UserAPI.changingDataUser(UserAPI.getToken(user1), user2).then()
                 .statusCode(200)
                 .and()
                 .body("success", equalTo(true));
+
     }
 
     @Test
     @Description("Check that possible change the email in the profile")
     public void checkSuccessfullyEmailChangingWhenAuthorized(){
-        UserPOJO user3 = new UserPOJO(RandomStringUtils.randomAlphabetic(10)+email, null, null);
-        UserAPI.changingDataUser(UserDataChangingTest.getToken(user1), user3).then()
+        UserPOJO user3 = new UserPOJO("nadezhda1028@yandex.ru", "111111", "Y");
+        UserPOJO user10 = new UserPOJO("nadezhda2028@yandex.ru", "111111", "Y");
+        UserAPI.createUser(user3);
+
+        ValidatableResponse authorization1 = UserAPI.ResponseToGetRefreshToken(user3);
+        String accessTokenWithBearer1 = authorization1.extract().path("accessToken");
+        String accessToken = accessTokenWithBearer1.substring(7, accessTokenWithBearer1.length());
+        String refreshToken1 = authorization1.extract().path("refreshToken");
+
+
+        UserAPI.changingDataUser(accessToken, user10).then()
                 .statusCode(200)
                 .and()
                 .body("success", equalTo(true));
+
+        int a = UserAPI.makeLogout(refreshToken1).extract().statusCode();
+
+        System.out.println(a);
+        // авторизуемся с новым email
+        ValidatableResponse authorization2 = UserAPI.ResponseToGetRefreshToken(user10);
+        assertEquals("Авторизация с новым email не прошла",200, authorization2.extract().statusCode());
+
+        String newAccessTokenWithBearer2 = authorization2.extract().path("accessToken");
+        String newAccessToken = newAccessTokenWithBearer2.substring(7, newAccessTokenWithBearer2.length());
+
+        UserAPI.deleteUser(newAccessToken,user10).then().body("message", equalTo("User successfully removed"));
     }
 
     @Test
     @Description("Check that impossible change the email if it already present in the system in another user")
     public void checkImpossibleEmailChangingWhenItExistInTheSystem(){
 
-        UserAPI.changingDataUser(UserDataChangingTest.getToken(user1), user0).then()
+        UserAPI.changingDataUser(UserAPI.getToken(user1), user0).then()
                 .statusCode(403)
                 .and()
                 .body("message", equalTo("User with such email already exists"));
@@ -112,8 +125,8 @@ public class UserDataChangingTest {
     @Test
     @Description("Check that possible change the password in the profile")
     public void checkSuccessfullyPasswordChangingWhenAuthorized(){
-        UserPOJO user6 = new UserPOJO("nadezhda0016@yandex.ru", "211111", name);
-        UserPOJO user7 = new UserPOJO("nadezhda0016@yandex.ru", "6tyhu7", name);
+        UserPOJO user6 = new UserPOJO("nadezhda0018@yandex.ru", "211111", name);
+        UserPOJO user7 = new UserPOJO("nadezhda0018@yandex.ru", "6tyhu7", name);
         UserAPI.createUser(user6);
 
         ValidatableResponse authorization = UserAPI.ResponseToGetRefreshToken(user6);
@@ -124,20 +137,26 @@ public class UserDataChangingTest {
         System.out.println(accessToken);
         System.out.println(refreshToken);
 
+        // проверяем смену пароля
+
         UserAPI.changingDataUser(accessToken, user7).then()
                 .statusCode(200)
                 .and()
                 .body("success", equalTo(true));
 
+        // разлогиниваемся
+
         int a = UserAPI.makeLogout(refreshToken).extract().statusCode();
 
         System.out.println(a);
 
-        //UserPOJO user6WithNewPassword = new UserPOJO("nadezhda0013@yandex.ru", "6tyhu7", name);
+        // авторизуемся с новым паролем
+        ValidatableResponse newAuthorization = UserAPI.ResponseToGetRefreshToken(user7);
+        assertEquals("Авторизация с новым паролем не прошла",200, newAuthorization.extract().statusCode());
 
-       String b = UserAPI.ResponseToGetRefreshToken(user7).extract().asPrettyString();
-        System.out.println(b);
+        String newAccessTokenWithBearer = newAuthorization.extract().path("accessToken");
+        String newAccessToken = newAccessTokenWithBearer.substring(7, accessTokenWithBearer.length());
 
-        UserAPI.deleteUser(user7).then().body("message", equalTo("z"));
+        UserAPI.deleteUser(newAccessToken,user7).then().body("message", equalTo("User successfully removed"));
     }
 }

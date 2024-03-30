@@ -1,21 +1,14 @@
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
-
-import java.lang.reflect.Array;
-
 import static io.restassured.RestAssured.given;
 
-
-
 public class UserAPI {
-
     final static String USERREGISTERED = "/api/auth/register";
     final static String USERDATA = "/api/auth/user";
     final static String USERLOGIN = "/api/auth/login";
     final static String USERLOGOUT = "api/auth/logout";
-    final static String DROPPASSWORD = "api/password-reset";
-    final static String CHANGEPASSWORD = "password-reset/reset/";
+
 
 
 
@@ -39,11 +32,21 @@ public class UserAPI {
         return response;
     }
 
+    @Step("Make post-request to login of user")
+            public static String getToken (UserPOJO user){
+            String token = UserAPI.authorizedUser(user).body().asString();
+            String[] split = token.split(" ");
+            String tokenNumber = split[1].substring(0, 171);
+            System.out.println(tokenNumber);
+            return tokenNumber;
+        }
+
     @Step("Make delete-request to delete of user")
-    public static Response deleteUser(UserPOJO user){
+    public static Response deleteUser(String token, UserPOJO user){
 
         Response response = given()
                 .header("Content-type", "application/json")
+                .auth().oauth2(token)
                 .body(user)
                 .delete(USERDATA);
         return response;
@@ -82,6 +85,7 @@ public class UserAPI {
                 .post(USERLOGIN)
                 .then();
     }
+
 
 
 }
