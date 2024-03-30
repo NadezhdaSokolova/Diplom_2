@@ -1,5 +1,8 @@
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
+
+import java.lang.reflect.Array;
+
 import static io.restassured.RestAssured.given;
 
 
@@ -9,6 +12,7 @@ public class UserAPI {
     final static String USERREGISTERED = "/api/auth/register";
     final static String USERDATA = "/api/auth/user";
     final static String USERLOGIN = "/api/auth/login";
+    final static String USERLOGOUT = "api/auth/logout";
     final static String DROPPASSWORD = "api/password-reset";
     final static String CHANGEPASSWORD = "password-reset/reset/";
 
@@ -66,6 +70,17 @@ public class UserAPI {
         return response;
     }
 
+    @Step("Make request to make logout")
+    public static Response makeLogout(String token){
+        String newToken = "{{" + token + "}}";
+        Response response = given()
+                .header("Content-type", "application/json")
+                .body(newToken)
+                .post(USERLOGOUT);
+        return response;
+
+    }
+
     @Step("Make post-request to change password")
     public static Response changePasswordWithoutAuthorized(PassPOJO pass, String code){
 
@@ -75,8 +90,5 @@ public class UserAPI {
                 .post(CHANGEPASSWORD+"reset-password/"+code);
         return response;
     }
-
-
-
 
 }

@@ -14,8 +14,6 @@ public class UserDataChangingTest {
     String code = "c2ca9439-a396-4b65-a7f7-7542d0b95bc7";
     UserPOJO user1 = new UserPOJO(email, password, name);
     UserPOJO user0 = new UserPOJO("6"+email, "111111", name);
-    UserPOJO user6 = new UserPOJO("3"+email, "211111", name);
-
 
     public static String getToken(UserPOJO user){
         String token = UserAPI.authorizedUser(user).body().asString();
@@ -32,7 +30,6 @@ public class UserDataChangingTest {
         //создаем тестового пользователя
         UserAPI.createUser(user1);
         UserAPI.createUser(user0);
-        UserAPI.createUser(user6);
     }
 
     @After
@@ -44,10 +41,6 @@ public class UserDataChangingTest {
 
             UserAPI.authorizedUser(user0);
             UserAPI.deleteUser(user0);
-
-            UserAPI.authorizedUser(user6);
-            UserAPI.deleteUser(user6);
-
         }
         catch (Exception e){
             System.out.println ("Удалять нечего. Пользователь не прошел авторизацию.");
@@ -69,9 +62,7 @@ public class UserDataChangingTest {
     @Test
     @Description("Check that possible change the email in the profile")
     public void checkSuccessfullyEmailChangingWhenAuthorized(){
-
         UserPOJO user3 = new UserPOJO(RandomStringUtils.randomAlphabetic(10)+email, null, null);
-
         UserAPI.changingDataUser(UserDataChangingTest.getToken(user1), user3).then()
                 .statusCode(200)
                 .and()
@@ -87,6 +78,7 @@ public class UserDataChangingTest {
                 .and()
                 .body("message", equalTo("User with such email already exists"));
     }
+
 
     @Test
     @Description("Check that impossible to change user email and name if unauthorized")
@@ -115,6 +107,27 @@ public class UserDataChangingTest {
 //    }
 
 
+    @Test
+    @Description("Check that possible change the password in the profile")
+    public void checkSuccessfullyPasswordChangingWhenAuthorized(){
+        UserPOJO user6 = new UserPOJO("nadezhda33@yandex.ru", "211111", name);
+        UserAPI.createUser(user6);
+        UserPOJO user7 = new UserPOJO(null, "6tyhu7", null);
+        String currentToken = UserDataChangingTest.getToken(user6);
+        UserAPI.changingDataUser(currentToken, user7).then()
+                .statusCode(200)
+                .and()
+                .body("success", equalTo(true));
+        UserAPI.makeLogout(currentToken).then()
+                .statusCode(200);
+
+        UserPOJO user6WithNewPassword = new UserPOJO("nadezhda33@yandex.ru", "6tyhu7", name);
+
+        UserAPI.authorizedUser(user6WithNewPassword).then().body("success",equalTo(true));
+
+        UserAPI.deleteUser(user6WithNewPassword);
+    }
+
 //    @Test
 //    @Description("Check that possible to change the password with authorization")
 //    public void checkPossibilityToChangeThePasswordDuringAuthorization(){
@@ -122,7 +135,7 @@ public class UserDataChangingTest {
 //        UserPOJO user7 = new UserPOJO(null, "6tyhu7", null);
 //
 //
-//        UserAPI.changePassword(user7, UserDataChangingTest.getToken(user6)).then().
+//        UserAPI.changingDataUser(user7, UserDataChangingTest.getToken(user6)).then().
 ////                .body("message", equalTo("Password successfully reset"));;
 //        //UserAPI.dropPassword(user6);
 //        //UserAPI.changePassword(pass, null);
