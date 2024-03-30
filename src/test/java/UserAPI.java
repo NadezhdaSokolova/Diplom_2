@@ -1,5 +1,6 @@
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 
 import java.lang.reflect.Array;
 
@@ -60,35 +61,27 @@ public class UserAPI {
         return response;
     }
 
-    @Step("Make post-request to drop password")
-    public static Response dropPassword(UserPOJO user){
-
-        Response response = given()
-                .header("Content-type", "application/json")
-                .body(user)
-                .post(DROPPASSWORD);
-        return response;
-    }
 
     @Step("Make request to make logout")
-    public static Response makeLogout(String token){
-        String newToken = "{{" + token + "}}";
-        Response response = given()
-                .header("Content-type", "application/json")
-                .body(newToken)
-                .post(USERLOGOUT);
-        return response;
+    public static ValidatableResponse makeLogout(String token){
+        RefreshTokenPOJO refreshToken = new RefreshTokenPOJO(token);
 
+        return given()
+                .header("Content-type", "application/json")
+                .body(refreshToken)
+                .post(USERLOGOUT)
+                .then();
     }
 
-    @Step("Make post-request to change password")
-    public static Response changePasswordWithoutAuthorized(PassPOJO pass, String code){
+    @Step("Make post-request to getRefreshTokeh after authorization")
+    public static ValidatableResponse ResponseToGetRefreshToken(UserPOJO user){
 
-        Response response = given()
+        return given()
                 .header("Content-type", "application/json")
-                .body(pass)
-                .post(CHANGEPASSWORD+"reset-password/"+code);
-        return response;
+                .body(user)
+                .post(USERLOGIN)
+                .then();
     }
+
 
 }

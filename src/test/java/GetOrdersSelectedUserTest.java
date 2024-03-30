@@ -1,14 +1,16 @@
 import io.qameta.allure.Description;
 import io.restassured.RestAssured;
 import io.restassured.response.ValidatableResponse;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.hamcrest.CoreMatchers.equalTo;
+import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class GetOrdersSelectedUserTest {
+
     public static String getToken(UserPOJO user){
         String token = UserAPI.authorizedUser(user).body().asString();
         String[] split = token.split(" ");
@@ -17,12 +19,15 @@ public class GetOrdersSelectedUserTest {
         return tokenNumber;
     }
 
-    UserPOJO user1 = new UserPOJO("Nadezhda24@yandex.ru", "111111", "Надежда");
+    UserPOJO user1 = new UserPOJO("Ннн24@yandex.ru" + RandomStringUtils.randomAlphabetic(4), "111111", "Надежда");
     @Before
     public void setUp() {
         RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/";
         //создаем тестового пользователя
         UserAPI.createUser(user1);
+
+        SelectedIngredientsPOJO ingredient = new SelectedIngredientsPOJO(OrderAPI.arrayOfIngredients());
+        OrderAPI.makeBurgerWithAuthorization(ingredient, OrderCreationTest.getToken(user1));
     }
 
     @After
@@ -67,14 +72,17 @@ public class GetOrdersSelectedUserTest {
         assertEquals("Сообщение об ошибке не соответствует спецификации", message, "You should be authorised");
     }
 
-
     @Test
     @Description("Check quontaty of orders")
     public void checkQuontatyOfOrders(){
 
-        ValidatableResponse lislOfOrders =  OrderAPI.getListOfOrdersOfUser(GetOrdersSelectedUserTest.getToken(user1));
-        int totalToday = lislOfOrders.extract().path("totalToday");
-        assertEquals(0, totalToday);
-    }
+        ValidatableResponse authorization = UserAPI.ResponseToGetRefreshToken(user1);
+        String accessTokenWithBearer = authorization.extract().path("accessToken");
+        String accessToken = accessTokenWithBearer.substring(7, accessTokenWithBearer.length());
+        System.out.println(accessToken);
 
+        ValidatableResponse lislOfOrders =  OrderAPI.getListOfOrdersOfUser(accessToken);
+        ArrayList orders = lislOfOrders.extract().path("orders");
+        assertEquals(1, orders.size());
+    }
 }

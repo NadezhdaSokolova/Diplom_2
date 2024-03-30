@@ -4,14 +4,11 @@ import io.restassured.response.ValidatableResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
+import java.util.ArrayList;
 import java.util.HashMap;
-
 import static org.junit.Assert.*;
 
-
 public class OrderCreationTest {
-
     UserPOJO user1 = new UserPOJO("nadezhda300@yandex.ru", "111111", "Надежда");
 
     public static String getToken(UserPOJO user){
@@ -157,13 +154,15 @@ public class OrderCreationTest {
 
 
     @Test
-    @Description("Check Internal Server Error making an burger with invalid hash of ingredient when unauthorized")
-    public void checkInternalServerErrorMakingAnBurgerWithInvalidHashOfIngredientWhenUnauthorized(){
-        SelectedIngredientsPOJO ingredient = new SelectedIngredientsPOJO();
-        System.out.print(ingredient.hashCode());
+    @Description("Check Internal Server Error when making an burger with invalid hash of ingredient when unauthorized")
+    public void checkInternalServerErrorWhenMakingAnBurgerWithInvalidHashOfIngredientWhenUnauthorized(){
+        ArrayList<String> incorrectIngredients = new ArrayList<>();
+        incorrectIngredients.add("123");
+        SelectedIngredientsPOJO ingredient = new SelectedIngredientsPOJO(incorrectIngredients);
         ValidatableResponse order = OrderAPI.makeBurger(ingredient);
-        boolean status = order.extract().path("success");
-        assertFalse(status);
+        int status = order.extract().statusCode();
+        assertEquals("Статус код не соответствует спецификации", 500, status);
     }
+
 
 }
