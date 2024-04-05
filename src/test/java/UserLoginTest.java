@@ -80,7 +80,6 @@ public class UserLoginTest {
         String[] splited = response.split(";");
         String savedEmail = splited[0].substring(326, 347);
 
-
         assertEquals ("Логин некорректно вернулся", email.toLowerCase(), savedEmail.toLowerCase());
     }
 
@@ -92,8 +91,6 @@ public class UserLoginTest {
         String response = UserAPI.authorizedUser(user1).body().asString();
         String[] splited1 = response.split(";");
         String savedName = splited1[0].substring(357,364);
-
-        System.out.println(savedName);
 
         assertEquals ("Имя некорректно сохранено", "Надежда", savedName);
     }

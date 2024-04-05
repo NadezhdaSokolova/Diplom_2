@@ -41,7 +41,6 @@ public class OrderAPI {
     public static ArrayList<String> arrayOfIngredients() {
 
         ArrayList<HashMap<String, String>> Response = OrderAPI.getIngredients().extract().path("data");
-        System.out.println(Response.get(1).get("_id"));
         ArrayList<String> listOfIngredients = new ArrayList<>();
         for (int i = 0; i < Response.size(); i++)
         {

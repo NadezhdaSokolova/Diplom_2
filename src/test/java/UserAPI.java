@@ -37,7 +37,6 @@ public class UserAPI {
             String token = UserAPI.authorizedUser(user).body().asString();
             String[] split = token.split(" ");
             String tokenNumber = split[1].substring(0, 171);
-            System.out.println(tokenNumber);
             return tokenNumber;
         }
 
@@ -85,7 +84,5 @@ public class UserAPI {
                 .post(USERLOGIN)
                 .then();
     }
-
-
 
 }

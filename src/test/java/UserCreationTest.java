@@ -29,7 +29,6 @@ public class UserCreationTest {
             ValidatableResponse authorization = UserAPI.ResponseToGetRefreshToken(user1);
             String accessTokenWithBearer = authorization.extract().path("accessToken");
             String newAccessToken = accessTokenWithBearer.substring(7, accessTokenWithBearer.length());
-            System.out.println(newAccessToken);
             UserAPI.deleteUser(newAccessToken,user1);
         }
         catch (Exception e){
@@ -86,8 +85,6 @@ public class UserCreationTest {
         String response = UserAPI.createUser(user).body().asString();
         String[] splited1 = response.split(";");
         String savedName = splited1[0].substring(83,90);
-
-        System.out.println(savedName);
 
         assertEquals ("Имя некорректно сохранено", "Надежда", savedName);
     }

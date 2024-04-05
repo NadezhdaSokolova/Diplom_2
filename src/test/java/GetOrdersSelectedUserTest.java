@@ -25,7 +25,7 @@ public class GetOrdersSelectedUserTest {
     @After
     public void deleteTestUser(){
         try  {
-            //UserAPI.authorizedUser(user1);
+
             UserAPI.deleteUser(UserAPI.getToken(user1),user1);
         }
         catch (Exception e){
@@ -71,7 +71,6 @@ public class GetOrdersSelectedUserTest {
         ValidatableResponse authorization = UserAPI.ResponseToGetRefreshToken(user1);
         String accessTokenWithBearer = authorization.extract().path("accessToken");
         String accessToken = accessTokenWithBearer.substring(7, accessTokenWithBearer.length());
-        System.out.println(accessToken);
 
         ValidatableResponse lislOfOrders =  OrderAPI.getListOfOrdersOfUser(accessToken);
         ArrayList orders = lislOfOrders.extract().path("orders");

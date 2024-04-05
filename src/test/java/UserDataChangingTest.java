@@ -76,9 +76,9 @@ public class UserDataChangingTest {
                 .and()
                 .body("success", equalTo(true));
 
-        int a = UserAPI.makeLogout(refreshToken1).extract().statusCode();
+        UserAPI.makeLogout(refreshToken1);
 
-        System.out.println(a);
+
         // авторизуемся с новым email
         ValidatableResponse authorization2 = UserAPI.ResponseToGetRefreshToken(user10);
         assertEquals("Авторизация с новым email не прошла",200, authorization2.extract().statusCode());
@@ -134,9 +134,6 @@ public class UserDataChangingTest {
         String accessToken = accessTokenWithBearer.substring(7, accessTokenWithBearer.length());
         String refreshToken = authorization.extract().path("refreshToken");
 
-        System.out.println(accessToken);
-        System.out.println(refreshToken);
-
         // проверяем смену пароля
 
         UserAPI.changingDataUser(accessToken, user7).then()
@@ -146,9 +143,7 @@ public class UserDataChangingTest {
 
         // разлогиниваемся
 
-        int a = UserAPI.makeLogout(refreshToken).extract().statusCode();
-
-        System.out.println(a);
+        UserAPI.makeLogout(refreshToken);
 
         // авторизуемся с новым паролем
         ValidatableResponse newAuthorization = UserAPI.ResponseToGetRefreshToken(user7);
